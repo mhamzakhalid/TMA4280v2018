@@ -8,19 +8,18 @@ using namespace std;
 #define pi 3.141592653589793238462643383279502
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
-struct addScalar{
-
-    double val;
-    addScalar(double val) : val(val){};
-
-    void operator()(double &elem) const{
-
-        elem += val;
-
-    }
-
-};
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
+//struct addScalar{
+//
+//    double val;
+//    addScalar(double val) : val(val){};
+//
+//    void operator()(double &elem) const{
+//
+//        elem += val;
+//    }
+//
+//};
+//%%%%%%%%%%%%%%% Gaussian Quadrature 3 point rule %%%%%%%%%%%%%%%%%%%%%%%%%//
 
 class Gaussian{
     public:
@@ -36,17 +35,20 @@ class Gaussian{
             double det;
             det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
 
-            double K[2][2];
-            K[0][0] = + J[1][1] / det;
-            K[1][0] = - J[1][0] / det;
-            K[0][1] = - J[0][1] / det;
-            K[1][1] = + J[0][0] / det;
-
             double lambda[3][3];
+
+
+            lambda[0][0] = 1./2.;
+            lambda[0][1] = 1./2.;
+            lambda[0][2] = 0.;
+            lambda[1][0] = 1./2.;
+            lambda[1][1] = 0.;
+            lambda[1][2] = 1./2.;
+            lambda[2][0] = 0.;
+            lambda[2][1] = 1./2.;
+            lambda[2][2] = 1./2.;
+
             double rho=1./3.;
-            //Making objects from Classes
-
-
             double K1;
             K1=abs(det/2.);
             double X[3][2];
@@ -108,7 +110,7 @@ int main(int argc, char** argv) {
 
     int PIED = sqrt(size); // PROCESSORS IN EACH DIRECTION
 
-    int PSSV = SMS*n*floor(rank/PIED) + (rank % PIED)*SMS; // PROCESSOR SQUARE SHIFT VALUE
+    int PSSV = SMS*n*floor(rank/PIED) + (rank % PIED)*SMS;     // PROCESSOR SQUARE SHIFT VALUE
     int PPSV = SMS*(n+1)*floor(rank/PIED) + (rank % PIED)*SMS; // PROCESSOR POINT SHIFT VALUE
 
     for (int i = 0; i < pow(SMS,2); i++) {
@@ -170,7 +172,7 @@ int main(int argc, char** argv) {
 
     double globalA[(int)pow(n+1,2)][(int)pow(n+1,2)];
     double globalM[(int)pow(n+1,2)][(int)pow(n+1,2)];
-
+    double globalF[(int)pow(n+1,2)];
     double jacobianLT;
     double jacobianUT;
     double plt[3][2]={};
@@ -249,26 +251,24 @@ int main(int argc, char** argv) {
         M[localTriangleCells[squareNum+NOSC-1][2]-1][localTriangleCells[squareNum+NOSC-1][2]-1] += jacobianUT * assemM[2][2];
 
       //  Right hand side of the matrix
-
-
-
-        f_lt=GQ.GQ2d(plt);
-        f_ut=GQ.GQ2d(put);
+        f_lt=GQ.GQ2d(plt);  //lower trangle
+        f_ut=GQ.GQ2d(put);  //upper triangle
 //        cout << "Quadrature: " << f_k << endl;
-        f[localTriangleCells[squareNum-1][0]] += 2*(pow(pi,2)+1)*cos(pi*plt[0][0])*sin(pi*plt[0][1]) + f_lt ;
-        f[localTriangleCells[squareNum-1][1]] += 2*(pow(pi,2)+1)*cos(pi*plt[1][0])*sin(pi*plt[1][1]) + f_lt ;
-        f[localTriangleCells[squareNum-1][2]] += 2*(pow(pi,2)+1)*cos(pi*plt[2][0])*sin(pi*plt[2][1]) + f_lt ;
+        F[localTriangleCells[squareNum-1][0]-1] += 2*(pow(pi,2)+1)*cos(pi*plt[0][0])*sin(pi*plt[0][1]) + f_lt ;
+        F[localTriangleCells[squareNum-1][1]-1] += 2*(pow(pi,2)+1)*cos(pi*plt[1][0])*sin(pi*plt[1][1]) + f_lt ;
+        F[localTriangleCells[squareNum-1][2]-1] += 2*(pow(pi,2)+1)*cos(pi*plt[2][0])*sin(pi*plt[2][1]) + f_lt ;
 
-        f[localTriangleCells[squareNum+NOSC-1][0]] += 2*(pow(pi,2)+1)*cos(pi*put[0][0])*sin(pi*put[0][1]) + f_ut ;
-        f[localTriangleCells[squareNum+NOSC-1][1]] += 2*(pow(pi,2)+1)*cos(pi*put[1][0])*sin(pi*put[1][1]) + f_ut ;
-        f[localTriangleCells[squareNum+NOSC-1][2]] += 2*(pow(pi,2)+1)*cos(pi*put[2][0])*sin(pi*put[2][1]) + f_ut ;
+        F[localTriangleCells[squareNum+NOSC-1][0]-1] += 2*(pow(pi,2)+1)*cos(pi*put[0][0])*sin(pi*put[0][1]) + f_ut ;
+        F[localTriangleCells[squareNum+NOSC-1][1]-1] += 2*(pow(pi,2)+1)*cos(pi*put[1][0])*sin(pi*put[1][1]) + f_ut ;
+        F[localTriangleCells[squareNum+NOSC-1][2]-1] += 2*(pow(pi,2)+1)*cos(pi*put[2][0])*sin(pi*put[2][1]) + f_ut ;
 
 
     }
 
-//    MPI_Reduce(&A, &globalA, pow(n+1,4), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-//    MPI_Reduce(&M, &globalM, pow(n+1,4), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-//
+    MPI_Reduce(&A, &globalA, pow(n+1,4), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&M, &globalM, pow(n+1,4), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&F, &globalF, pow(n+1,4), MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
 //****************   Test for printing positions ***************
 //    if (rank==3){
 //        for (int i=0;i<=2;i++) {
@@ -276,33 +276,58 @@ int main(int argc, char** argv) {
 //    }
 
 
-//***************  Test for printing Matrix    ****************
-//    if (rank == 0){
-//
-//        for(int i = 0; i < (int)pow(n+1,2); i++){
-//
-//            for(int j = 0; j< (int)pow(n+1,2); j++){
-//
-//                cout << globalA[i][j] << " ";
-//
-//            }
-//
-//            cout << endl;
-//
-//        }
-//
-//    }
+//***************  Test for printing Matrix A  ****************
+    if (rank == 0){
+         cout << endl << "              Mass Matrix" << endl;
+        for(int i = 0; i < (int)pow(n+1,2); i++){
 
-    if (rank == 1){
-    cout << "Rank:" << rank << endl;
-        for (int i = 0; i < pow(SMS,2); i++){
-        double squareNum;
+            for(int j = 0; j< (int)pow(n+1,2); j++){
 
-        squareNum = n*floor(i/SMS) + (i % SMS) + 1 + PSSV;
-        cout << i+1 << ": " << localTriangleCells[squareNum+NOSC-1][0]<< " " << localTriangleCells[squareNum+NOSC-1][1]<< " " << localTriangleCells[squareNum+NOSC-1][2] << endl;
-}
+                cout << globalA[i][j] << "   ";
+
+            }
+
+            cout << endl;
+
+        }
 
     }
+//***************  Test for printing Matrix  M  ****************
+    if (rank == 0){
+        cout << endl << "               Stiffness Matrix" << endl;
+        for(int i = 0; i < (int)pow(n+1,2); i++){
+
+            for(int j = 0; j< (int)pow(n+1,2); j++){
+
+                cout << globalM[i][j] << "    ";
+
+            }
+
+            cout << endl;
+
+        }
+
+    }
+//********** Printing F *********************
+    if (rank == 0){
+        cout << endl << "           Right Hand side of the system " << endl;
+        for(int i = 0; i <(int)pow(n+1,2); i++){
+
+                cout << "i: "<< i+1 << " "<< globalF[i] << " " << endl;
+        }
+    }
+
+
+//    if (rank == 1){
+//    cout << "Rank:" << rank << endl;
+//        for (int i = 0; i < pow(SMS,2); i++){
+//        double squareNum;
+//
+//        squareNum = n*floor(i/SMS) + (i % SMS) + 1 + PSSV;
+//        cout << i+1 << ": " << localTriangleCells[squareNum+NOSC-1][0]<< " " << localTriangleCells[squareNum+NOSC-1][1]<< " " << localTriangleCells[squareNum+NOSC-1][2] << endl;
+//}
+//
+//    }
 
     MPI_Finalize();
 
