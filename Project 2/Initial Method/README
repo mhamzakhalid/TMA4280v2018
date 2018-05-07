@@ -1,0 +1,16 @@
+////////********************************** READ ME **************************////////
+
+This is our Initial approach that we used to parallelize the probelm. 
+What we've done in this section includes,
+1. Setting up Mesh in parallel for both 1D and 2D
+2. Implement the Assembly for Mass Matrix, Stiffness Matrix and Right hand side of Poisson Equation in Parallel for both 1D and 2D
+3. Solving function with Gaussian Quadrature in parallel for both 1D and 2D
+
+RESULTS: For the initial method our results for both matrices are very good. But what we lack is local numbering for setting up the matrix which was attempted in next
+
+
+
+In order to run the program
+
+1. Type (make 1D) to run 1D problem
+2. Type (make 2D) to run 2D problem
