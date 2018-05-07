@@ -3,7 +3,6 @@
 #include <vector>
 #include <mpi.h>
 #include <iomanip>
-//#include <eigen3>
 #define pi 3.141592653589793238462643383279502
 using namespace std;
 
@@ -46,10 +45,7 @@ int main(int argc, char** argv) {
     int n;
 
     if(rank == 0){
-
-        printf("Please enter the number of cells: ");
-        fflush(stdout);
-        cin >> n;
+         n=8;
 
     }
 

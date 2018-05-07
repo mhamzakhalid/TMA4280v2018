@@ -7,18 +7,7 @@
 using namespace std;
 #define pi 3.141592653589793238462643383279502
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
-//struct addScalar{
-//
-//    double val;
-//    addScalar(double val) : val(val){};
-//
-//    void operator()(double &elem) const{
-//
-//        elem += val;
-//    }
-//
-//};
+
 //%%%%%%%%%%%%%%% Gaussian Quadrature 3 point rule %%%%%%%%%%%%%%%%%%%%%%%%%//
 
 class Gaussian{
@@ -89,9 +78,7 @@ int main(int argc, char** argv) {
 
     if(rank == 0){
 
-        printf("Please enter the number of square cells in each direction: ");
-        fflush(stdout);
-        cin >> n;
+    n=2;
 
     }
 
@@ -207,9 +194,6 @@ int main(int argc, char** argv) {
           jacobianLT = abs((plt[0][0] - plt[2][0]) * (plt[1][1] - plt[2][1]) - (plt[1][0]- plt[2][0] ) * (plt[0][1] - plt[2][1]));
           jacobianUT = abs((put[0][0] - put[2][0]) * (put[1][1] - put[2][1]) - (put[1][0]- put[2][0] ) * (put[0][1] - put[2][1]));
 
-//        jacobianLT = abs((localPositions[localTriangleCells[squareNum-1][0]-1][0] - localPositions[localTriangleCells[squareNum-1][2]-1][0]) * (localPositions[localTriangleCells[squareNum-1][1]-1][1] - localPositions[localTriangleCells[squareNum-1][2]-1][1]) - (localPositions[localTriangleCells[squareNum-1][1]-1][0] - localPositions[localTriangleCells[squareNum-1][2]-1][0]) * (localPositions[localTriangleCells[squareNum-1][0]-1][1] - localPositions[localTriangleCells[squareNum-1][2]-1][1]));
-//        jacobianUT = abs((localPositions[localTriangleCells[squareNum+NOSC-1][0]-1][0] - localPositions[localTriangleCells[squareNum+NOSC-1][2]-1][0]) * (localPositions[localTriangleCells[squareNum+NOSC-1][1]-1][1] - localPositions[localTriangleCells[squareNum+NOSC-1][2]-1][1]) - (localPositions[localTriangleCells[squareNum+NOSC-1][1]-1][0] - localPositions[localTriangleCells[squareNum+NOSC-1][2]-1][0]) * (localPositions[localTriangleCells[squareNum+NOSC-1][0]-1][1] - localPositions[localTriangleCells[squareNum+NOSC-1][2]-1][1]));
-
         A[localTriangleCells[squareNum-1][0]-1][localTriangleCells[squareNum-1][0]-1] += jacobianLT * assemA[0][0];
         A[localTriangleCells[squareNum-1][0]-1][localTriangleCells[squareNum-1][1]-1] += jacobianLT * assemA[0][1];
         A[localTriangleCells[squareNum-1][0]-1][localTriangleCells[squareNum-1][2]-1] += jacobianLT * assemA[0][2];
@@ -253,7 +237,7 @@ int main(int argc, char** argv) {
       //  Right hand side of the matrix
         f_lt=GQ.GQ2d(plt);  //lower trangle
         f_ut=GQ.GQ2d(put);  //upper triangle
-//        cout << "Quadrature: " << f_k << endl;
+
         F[localTriangleCells[squareNum-1][0]-1] += 2*(pow(pi,2)+1)*cos(pi*plt[0][0])*sin(pi*plt[0][1]) + f_lt ;
         F[localTriangleCells[squareNum-1][1]-1] += 2*(pow(pi,2)+1)*cos(pi*plt[1][0])*sin(pi*plt[1][1]) + f_lt ;
         F[localTriangleCells[squareNum-1][2]-1] += 2*(pow(pi,2)+1)*cos(pi*plt[2][0])*sin(pi*plt[2][1]) + f_lt ;
@@ -318,16 +302,7 @@ int main(int argc, char** argv) {
     }
 
 
-//    if (rank == 1){
-//    cout << "Rank:" << rank << endl;
-//        for (int i = 0; i < pow(SMS,2); i++){
-//        double squareNum;
-//
-//        squareNum = n*floor(i/SMS) + (i % SMS) + 1 + PSSV;
-//        cout << i+1 << ": " << localTriangleCells[squareNum+NOSC-1][0]<< " " << localTriangleCells[squareNum+NOSC-1][1]<< " " << localTriangleCells[squareNum+NOSC-1][2] << endl;
-//}
-//
-//    }
+
 
     MPI_Finalize();
 
